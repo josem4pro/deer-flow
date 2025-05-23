@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any, Dict
 
 from langchain_openai import ChatOpenAI
-from langchain_community.chat_models import ChatOllama  # CAMBIADO: volvemos al import antiguo
+from langchain_experimental.llms.ollama_functions import OllamaFunctions # CAMBIADO: Importamos OllamaFunctions
 from langchain_core.language_models.chat_models import BaseChatModel
 
 from src.config import load_yaml_config
@@ -29,8 +29,8 @@ def _create_llm_use_conf(llm_type: LLMType, conf: Dict[str, Any]) -> BaseChatMod
         if not ollama_model_name:
             raise ValueError("ollama_model_name not found in OLLAMA_MODEL configuration for LLM type 'ollama'")
         
-        # CAMBIADO: quitamos format="json" para evitar problemas
-        return ChatOllama(base_url=ollama_base_url, model=ollama_model_name)
+        # CAMBIADO: Usamos OllamaFunctions en lugar de ChatOllama
+        return OllamaFunctions(model=ollama_model_name, base_url=ollama_base_url)
     else:
         # Existing logic for OpenAI models (reasoning, basic, vision)
         llm_type_map_openai = {
