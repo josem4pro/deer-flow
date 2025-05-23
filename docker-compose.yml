@@ -8,6 +8,10 @@ services:
       - "8000:8000"
     env_file:
       - .env
+    environment:
+      - SEARCH_API=${SEARCH_API}
+      - TAVILY_API_KEY=${TAVILY_API_KEY}
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
     volumes:
       - ./conf.yaml:/app/conf.yaml
     restart: unless-stopped
@@ -34,3 +38,7 @@ services:
 networks:
   deer-flow-network:
     driver: bridge
+    environment:
+      - SEARCH_API=${SEARCH_API}
+      - TAVILY_API_KEY=${TAVILY_API_KEY}
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
