@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any, Dict
 
 from langchain_openai import ChatOpenAI
-from langchain_community.chat_models import ChatOllama
+from langchain_ollama import ChatOllama # Modificado: Importación de ChatOllama desde langchain_ollama
 from langchain_core.language_models.chat_models import BaseChatModel
 
 from src.config import load_yaml_config
