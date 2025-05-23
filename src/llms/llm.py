@@ -17,12 +17,17 @@ _llm_cache: dict[LLMType, BaseChatModel] = {}
 
 def _create_llm_use_conf(llm_type: LLMType, conf: Dict[str, Any]) -> BaseChatModel:
     if llm_type == "ollama":
-        ollama_base_url = conf.get("ollama_base_url")
-        ollama_model_name = conf.get("ollama_model_name")
+        ollama_conf = conf.get("OLLAMA_MODEL")
+        if not ollama_conf or not isinstance(ollama_conf, dict):
+            raise ValueError("OLLAMA_MODEL configuration not found or is invalid in conf file.")
+        
+        ollama_base_url = ollama_conf.get("ollama_base_url")
+        ollama_model_name = ollama_conf.get("ollama_model_name")
+        
         if not ollama_base_url:
-            raise ValueError("ollama_base_url not found in configuration for LLM type 'ollama'")
+            raise ValueError("ollama_base_url not found in OLLAMA_MODEL configuration for LLM type 'ollama'")
         if not ollama_model_name:
-            raise ValueError("ollama_model_name not found in configuration for LLM type 'ollama'")
+            raise ValueError("ollama_model_name not found in OLLAMA_MODEL configuration for LLM type 'ollama'")
         return ChatOllama(base_url=ollama_base_url, model=ollama_model_name)
     else:
         # Existing logic for OpenAI models (reasoning, basic, vision)
