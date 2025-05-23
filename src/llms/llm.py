@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any, Dict
 
 from langchain_openai import ChatOpenAI
-from langchain_ollama import ChatOllama
+from langchain_community.chat_models import ChatOllama  # CAMBIADO: volvemos al import antiguo
 from langchain_core.language_models.chat_models import BaseChatModel
 
 from src.config import load_yaml_config
@@ -28,8 +28,9 @@ def _create_llm_use_conf(llm_type: LLMType, conf: Dict[str, Any]) -> BaseChatMod
             raise ValueError("ollama_base_url not found in OLLAMA_MODEL configuration for LLM type 'ollama'")
         if not ollama_model_name:
             raise ValueError("ollama_model_name not found in OLLAMA_MODEL configuration for LLM type 'ollama'")
-        # Agregado: format="json" para asegurar que Ollama responda en JSON, necesario para bind_tools
-        return ChatOllama(base_url=ollama_base_url, model=ollama_model_name, format="json")
+        
+        # CAMBIADO: quitamos format="json" para evitar problemas
+        return ChatOllama(base_url=ollama_base_url, model=ollama_model_name)
     else:
         # Existing logic for OpenAI models (reasoning, basic, vision)
         llm_type_map_openai = {
@@ -38,7 +39,7 @@ def _create_llm_use_conf(llm_type: LLMType, conf: Dict[str, Any]) -> BaseChatMod
             "vision": conf.get("VISION_MODEL"),
         }
         llm_params = llm_type_map_openai.get(llm_type)
-
+        
         if not llm_params:
             raise ValueError(f"Configuration not found for LLM type: {llm_type} in OpenAI models mapping or conf file.")
         
@@ -68,7 +69,6 @@ def get_llm_by_type(
 # In the future, we will use reasoning_llm and vl_llm for different purposes
 # reasoning_llm = get_llm_by_type("reasoning")
 # vl_llm = get_llm_by_type("vision")
-
 
 if __name__ == "__main__":
     # Initialize LLMs for different purposes - now these will be cached
