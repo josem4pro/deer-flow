@@ -5,31 +5,46 @@ from pathlib import Path
 from typing import Any, Dict
 
 from langchain_openai import ChatOpenAI
+from langchain_community.chat_models import ChatOllama
+from langchain_core.language_models.chat_models import BaseChatModel
 
 from src.config import load_yaml_config
 from src.config.agents import LLMType
 
 # Cache for LLM instances
-_llm_cache: dict[LLMType, ChatOpenAI] = {}
+_llm_cache: dict[LLMType, BaseChatModel] = {}
 
 
-def _create_llm_use_conf(llm_type: LLMType, conf: Dict[str, Any]) -> ChatOpenAI:
-    llm_type_map = {
-        "reasoning": conf.get("REASONING_MODEL"),
-        "basic": conf.get("BASIC_MODEL"),
-        "vision": conf.get("VISION_MODEL"),
-    }
-    llm_conf = llm_type_map.get(llm_type)
-    if not llm_conf:
-        raise ValueError(f"Unknown LLM type: {llm_type}")
-    if not isinstance(llm_conf, dict):
-        raise ValueError(f"Invalid LLM Conf: {llm_type}")
-    return ChatOpenAI(**llm_conf)
+def _create_llm_use_conf(llm_type: LLMType, conf: Dict[str, Any]) -> BaseChatModel:
+    if llm_type == "ollama":
+        ollama_base_url = conf.get("ollama_base_url")
+        ollama_model_name = conf.get("ollama_model_name")
+        if not ollama_base_url:
+            raise ValueError("ollama_base_url not found in configuration for LLM type 'ollama'")
+        if not ollama_model_name:
+            raise ValueError("ollama_model_name not found in configuration for LLM type 'ollama'")
+        return ChatOllama(base_url=ollama_base_url, model=ollama_model_name)
+    else:
+        # Existing logic for OpenAI models (reasoning, basic, vision)
+        llm_type_map_openai = {
+            "reasoning": conf.get("REASONING_MODEL"),
+            "basic": conf.get("BASIC_MODEL"),
+            "vision": conf.get("VISION_MODEL"),
+        }
+        llm_params = llm_type_map_openai.get(llm_type)
+
+        if not llm_params:
+            raise ValueError(f"Configuration not found for LLM type: {llm_type} in OpenAI models mapping or conf file.")
+        
+        if not isinstance(llm_params, dict):
+            raise ValueError(f"Invalid LLM configuration for {llm_type}: Expected a dictionary of parameters.")
+        
+        return ChatOpenAI(**llm_params)
 
 
 def get_llm_by_type(
     llm_type: LLMType,
-) -> ChatOpenAI:
+) -> BaseChatModel:
     """
     Get LLM instance by type. Returns cached instance if available.
     """
